@@ -149,7 +149,9 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             pos = player.getCurrentPosition();
         else
             pos = 0;
+        
         changedTimestamp = true;
+
         mAdapter.lyric_times[position] = String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(pos), getSeconds(pos), getMilli(pos));
         mAdapter.notifyItemChanged(position);
         mRecyclerView.smoothScrollToPosition(position + 1);
