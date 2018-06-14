@@ -1,0 +1,107 @@
+<resources>
+    <string name="app_name">LRC Editor</string>
+    <string name="action_settings">Settings</string>
+    <string name="nothing_here">That\'s-a-miss\nNo lyric files found</string>
+    <string name="toolbar_refresh_icon">Refresh the list</string>
+    <string name="toolbar_about_icon">About</string>
+    <string name="title_activity_create">CreateActivity</string>
+    <string name="lyrics_prompt_text">Paste the lyrics below</string>
+    <string name="done_text">Done</string>
+    <string name="default_timetext">00:00</string>
+    <string name="prev_description">Button to go seek 10 seconds behind</string>
+    <string name="play_description">Button to play/pause media</string>
+    <string name="forward_description">Button to seek 10 seconds forward</string>
+    <string name="previous_10_text"><![CDATA[10 <<]]></string>
+    <string name="play_text">&#9658;</string>
+    <string name="pause_text">&#9614;&#9614;</string>
+    <string name="forward_10_text"><![CDATA[>> 10]]></string>
+    <string name="play">&#9658;</string>
+    <string name="tapToAddSong_prompt">Tap here to select a song</string>
+    <string name="version_string">Version 1.0</string>
+    <string name="author_string">Made with ♥ by Jaseel</string>
+    <string name="rate_and_feedback_string">This app is made and maintained by just me\nPlease rate the app and provide constructive feedback\n\n\nThank You!\n♥</string>
+    <string name="toolbar_done_icon">Done</string>
+    <string name="finalization_header">Finalization</string>
+    <string name="song_name_prompt">Song Name:</string>
+    <string name="album_name_prompt">Album Name:</string>
+    <string name="artist_name_prompt">Artist Name:</string>
+    <string name="composer_prompt">Composer:</string>
+    <string name="optional_string">(Optional data)</string>
+    <string name="default_time">00:00.00</string>
+    <string name="plus_symbol">+</string>
+    <string name="minus_symbol">-</string>
+    <string name="processing_string">Processing</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Entry 1</item>
+        <item>Entry 2</item>
+        <item>Entry 3</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="multi_select_list_preference_default_value" />
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+</resources>

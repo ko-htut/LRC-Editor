@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/lyricitem_height"
+    android:layout_marginEnd="@dimen/lyricitem_margin"
+    android:layout_marginLeft="@dimen/lyricitem_margin"
+    android:layout_marginRight="@dimen/lyricitem_margin"
+    android:layout_marginStart="@dimen/lyricitem_margin"
+    android:orientation="horizontal"
+    android:padding="@dimen/item_padding">
+
+    <LinearLayout
+        android:id="@+id/item_time_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <Button
+            android:id="@+id/increase_time_button"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="@string/plus_symbol" />
+
+        <TextView
+            android:id="@+id/item_time"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:gravity="center"
+            android:text="@string/default_time" />
+
+        <Button
+            android:id="@+id/decrease_time_button"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="@string/minus_symbol" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/item_text"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="5"
+        android:gravity="center"
+        android:paddingLeft="@dimen/item_padding"
+        android:paddingRight="@dimen/item_padding"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/item_button"
+        android:layout_width="35dp"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:text="@string/plus_symbol" />
+
+    <Button
+        android:id="@+id/item_play"
+        android:layout_gravity="center"
+        android:layout_width="35dp"
+        android:layout_height="wrap_content"
+        android:text="@string/play"
+        android:visibility="invisible" />
+
+</LinearLayout>
