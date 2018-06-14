@@ -371,10 +371,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                 intent.putExtra("URI", uri);
                 intent.putExtra("LYRICS", mLyricList);
 
-                play_pause.setText(R.string.play_text);
-                player.pause();
-                isPlaying = false;
-
                 startActivity(intent);
                 return true;
             default:
