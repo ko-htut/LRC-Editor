@@ -36,6 +36,8 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
     private boolean permissionAlreadyGranted = false;
     private boolean scannedOnce = false;
 
+    private String saveLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,14 +55,25 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
             }
         });
 
+        saveLocation = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
+                .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
+
         ready_fileIO();
         if (permissionAlreadyGranted) {
             scan_lyrics();
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        saveLocation = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
+                .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
+        scan_lyrics();
+    }
+
     private void scan_lyrics() {
-        File f = new File(Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
+        File f = new File(saveLocation);
 
         TextView empty_textview = findViewById(R.id.empty_message_textview);
         RecyclerView r = findViewById(R.id.recyclerview);
@@ -110,7 +123,7 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         recyclerView.setAdapter(adapter);
         adapter.setClickListener(this);
 
-        if(scannedOnce) {
+        if (scannedOnce) {
             return;
         }
 
@@ -213,13 +226,18 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        Intent intent;
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 scan_lyrics();
                 Toast.makeText(this, "List refreshed!", Toast.LENGTH_SHORT).show();
                 return true;
+            case R.id.action_settings:
+                intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
             case R.id.action_about:
-                Intent intent = new Intent(this, AboutActivity.class);
+                intent = new Intent(this, AboutActivity.class);
                 startActivity(intent);
                 return true;
             default:
@@ -229,7 +247,7 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
 
     @Override
     public void fileSelected(String fileName) {
-        LyricReader r = new LyricReader(Environment.getExternalStorageDirectory().getPath() + "/Lyrics/", fileName);
+        LyricReader r = new LyricReader(saveLocation, fileName);
         if (!r.readLyrics()) {
             Toast.makeText(this, r.getErrorMsg(), Toast.LENGTH_LONG).show();
             return;

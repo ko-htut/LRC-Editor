@@ -47,6 +47,8 @@ public class FinalizeActivity extends AppCompatActivity {
 
     private TextView resultTextView;
 
+    private String saveLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +80,13 @@ public class FinalizeActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        saveLocation = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
+                .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
+    }
+
     public void saveLyrics(View view) {
         if (!isExternalStorageWritable()) {
             Toast.makeText(this, "ERROR: Storage unavailable/busy", Toast.LENGTH_LONG).show();
@@ -89,19 +98,19 @@ public class FinalizeActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
 
-        try (FileWriter writer = new FileWriter(new File(Environment.getExternalStorageDirectory().getPath() + "/Lyrics",
+        try (FileWriter writer = new FileWriter(new File(saveLocation,
                 songName.getText().toString() + ".lrc"))) {
-            writer.write("[ar: " + artistName.getText().toString().trim()   + "]\n" +
-                             "[al: " + albumName.getText().toString().trim()    + "]\n" +
-                             "[ti: " + songName.getText().toString().trim()     + "]\n" +
-                             "[au: " + composerName.getText().toString().trim() + "]\n" +
-                             "\n" +
-                             "[re:" + getString(R.string.app_name) + " - Android app" + "]\n" +
-                             "[ve:" + getString(R.string.version_string) + "]\n" +
+            writer.write("[ar: " + artistName.getText().toString().trim() + "]\n" +
+                    "[al: " + albumName.getText().toString().trim() + "]\n" +
+                    "[ti: " + songName.getText().toString().trim() + "]\n" +
+                    "[au: " + composerName.getText().toString().trim() + "]\n" +
+                    "\n" +
+                    "[re: " + getString(R.string.app_name) + " - Android app" + "]\n" +
+                    "[ve: " + getString(R.string.version_string) + "]\n" +
                              "\n");
             writer.write("[00:00.00]\n");
-            for(int i = 0, len = timestamps.length; i < len; i++) {
-                if(timestamps[i] != null) {
+            for (int i = 0, len = timestamps.length; i < len; i++) {
+                if (timestamps[i] != null) {
                     String lyric = mLyricList.get(i);
                     writer.write("[" + timestamps[i] + "]" + lyric + "\n");
                 }
@@ -116,10 +125,7 @@ public class FinalizeActivity extends AppCompatActivity {
 
         resultTextView.setTextColor(Color.rgb(45, 168, 26));
         resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
-                Environment.getExternalStorageDirectory()
-                + "/Lyrics/"
-                + songName.getText().toString()
-                        + ".lrc"));
+                saveLocation + songName.getText().toString() + ".lrc"));
     }
 
     private void grantPermission() {

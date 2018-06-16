@@ -149,7 +149,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             pos = player.getCurrentPosition();
         else
             pos = 0;
-        
+
         changedTimestamp = true;
 
         mAdapter.lyric_times[position] = String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(pos), getSeconds(pos), getMilli(pos));
@@ -181,6 +181,14 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         milli += 100;
         mAdapter.lyric_times[position] = String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(milli), getSeconds(milli), getMilli(milli));
         mAdapter.notifyItemChanged(position);
+
+        if (playerPrepared) {
+            player.seekTo((int) milli);
+            play_pause.setText(R.string.pause_text);
+            player.start();
+            isPlaying = true;
+            songTimeUpdater.post(updateSongTime);
+        }
     }
 
     @Override
@@ -192,6 +200,14 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             milli = 0;
         mAdapter.lyric_times[position] = String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(milli), getSeconds(milli), getMilli(milli));
         mAdapter.notifyItemChanged(position);
+
+        if (playerPrepared) {
+            player.seekTo((int) milli);
+            play_pause.setText(R.string.pause_text);
+            player.start();
+            isPlaying = true;
+            songTimeUpdater.post(updateSongTime);
+        }
     }
 
     private long getMinutes(double time) {
