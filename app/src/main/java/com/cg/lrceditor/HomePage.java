@@ -69,7 +69,8 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         super.onResume();
         saveLocation = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
                 .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
-        scan_lyrics();
+        if (permissionAlreadyGranted)
+            scan_lyrics();
     }
 
     private void scan_lyrics() {

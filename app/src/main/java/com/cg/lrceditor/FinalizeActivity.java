@@ -17,6 +17,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -25,9 +26,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +52,7 @@ public class FinalizeActivity extends AppCompatActivity {
     private TextView resultTextView;
 
     private String saveLocation;
+    private Uri saveUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +90,10 @@ public class FinalizeActivity extends AppCompatActivity {
         super.onResume();
         saveLocation = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
                 .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
+        String uriString = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
+                .getString("saveUri", null);
+        if (uriString != null)
+            saveUri = Uri.parse(uriString);
     }
 
     public void saveLyrics(View view) {
@@ -98,34 +107,72 @@ public class FinalizeActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
 
-        try (FileWriter writer = new FileWriter(new File(saveLocation,
-                songName.getText().toString() + ".lrc"))) {
-            writer.write("[ar: " + artistName.getText().toString().trim() + "]\n" +
-                    "[al: " + albumName.getText().toString().trim() + "]\n" +
-                    "[ti: " + songName.getText().toString().trim() + "]\n" +
-                    "[au: " + composerName.getText().toString().trim() + "]\n" +
-                    "\n" +
-                    "[re: " + getString(R.string.app_name) + " - Android app" + "]\n" +
-                    "[ve: " + getString(R.string.version_string) + "]\n" +
-                             "\n");
-            writer.write("[00:00.00]\n");
-            for (int i = 0, len = timestamps.length; i < len; i++) {
-                if (timestamps[i] != null) {
-                    String lyric = mLyricList.get(i);
-                    writer.write("[" + timestamps[i] + "]" + lyric + "\n");
+        if (saveUri != null) {
+            DocumentFile pickedDir = DocumentFile.fromTreeUri(this, saveUri);
+            grantUriPermission(getPackageName(), saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            DocumentFile file = pickedDir.createFile("application/*", songName.getText().toString() + ".lrc");
+            try {
+                OutputStream out = getContentResolver().openOutputStream(file.getUri());
+                InputStream in = new ByteArrayInputStream(lyricsToString().getBytes("UTF-8"));
+
+                byte[] buffer = new byte[1024];
+                int read;
+                while ((read = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, read);
                 }
+                in.close();
+
+
+                out.flush();
+                out.close();
+
+            } catch (IOException | NullPointerException e) {
+                e.printStackTrace();
+                resultTextView.setTextColor(Color.rgb(198, 27, 27));
+                resultTextView.setText(String.format(Locale.getDefault(), "Whoops! An Error Ocurred!\n%s", e.getMessage()));
+                return;
             }
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-            resultTextView.setTextColor(Color.rgb(198, 27, 27));
-            resultTextView.setText(String.format(Locale.getDefault(), "Whoops! An Error Ocurred!\n%s", e));
-            return;
+
+        } else {
+            try (FileWriter writer = new FileWriter(new File(saveLocation,
+                    songName.getText().toString() + ".lrc"))) {
+                writer.write(lyricsToString());
+                writer.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+                resultTextView.setTextColor(Color.rgb(198, 27, 27));
+                resultTextView.setText(String.format(Locale.getDefault(), "Whoops! An Error Ocurred!\n%s", e.getMessage()));
+                return;
+            }
         }
 
         resultTextView.setTextColor(Color.rgb(45, 168, 26));
         resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
-                saveLocation + songName.getText().toString() + ".lrc"));
+                saveLocation + "/" + songName.getText().toString() + ".lrc"));
+    }
+
+    private String lyricsToString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[ar: ").append(artistName.getText().toString().trim()).append("]\n")
+                .append("[al: ").append(albumName.getText().toString().trim()).append("]\n")
+                .append("[ti: ").append(songName.getText().toString().trim()).append("]\n")
+                .append("[au: ").append(composerName.getText().toString().trim()).append("]\n")
+                .append("\n")
+                .append("[re: ").append(getString(R.string.app_name)).append(" - Android app").append("]\n")
+                .append("[ve: ").append(getString(R.string.version_string)).append("]\n")
+                .append("\n");
+
+        sb.append("[00:00.00]\n");
+        for (int i = 0, len = timestamps.length; i < len; i++) {
+            if (timestamps[i] != null) {
+                String lyric = mLyricList.get(i);
+                sb.append("[").append(timestamps[i]).append("]").append(lyric).append("\n");
+            }
+        }
+
+        return sb.toString();
     }
 
     private void grantPermission() {

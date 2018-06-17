@@ -182,6 +182,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         mAdapter.lyric_times[position] = String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(milli), getSeconds(milli), getMilli(milli));
         mAdapter.notifyItemChanged(position);
 
+        changedTimestamp = true;
+
         if (playerPrepared) {
             player.seekTo((int) milli);
             play_pause.setText(R.string.pause_text);
@@ -200,6 +202,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             milli = 0;
         mAdapter.lyric_times[position] = String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(milli), getSeconds(milli), getMilli(milli));
         mAdapter.notifyItemChanged(position);
+
+        changedTimestamp = true;
 
         if (playerPrepared) {
             player.seekTo((int) milli);
@@ -227,7 +231,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         try {
             player.setDataSource(this, songUri);
         } catch (IOException | IllegalArgumentException e) {
-            Toast.makeText(this, "Whoops " + e, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Whoops " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
             finish();
         }
