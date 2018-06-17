@@ -33,7 +33,7 @@
     <string name="processing_string">Processing</string>
     <string name="title_activity_settings">Settings</string>
 
-    <string name="save_location_description">Location for reading and saving lyric files from:</string>
+    <string name="save_location_description">Location for reading and saving lyric files:</string>
     <string name="save_location_button_text">Change this location</string>
     <string name="toolbar_settings_icon">Settings</string>
 </resources>
