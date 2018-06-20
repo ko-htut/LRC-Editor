@@ -61,6 +61,6 @@
         android:layout_width="35dp"
         android:layout_height="wrap_content"
         android:text="@string/play"
-        android:visibility="invisible" />
+        android:enabled="false" />
 
 </LinearLayout>

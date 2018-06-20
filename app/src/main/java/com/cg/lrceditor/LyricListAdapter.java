@@ -1,5 +1,6 @@
 package com.cg.lrceditor;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -27,6 +28,51 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         lyric_times = new String[this.mLyricList.size()];
     }
 
+    @Override
+    public void onBindViewHolder(@NonNull LyricListAdapter.LyricViewHolder holder, int position) {
+        String mCurrent = mLyricList.get(position);
+        holder.itemTextview.setText(mCurrent);
+        if (item_visible[position]) {
+            holder.itemTimeControls.setVisibility(View.VISIBLE);
+            holder.itemplay.setEnabled(true);
+            holder.itemTimeview.setText(lyric_times[position]);
+        } else {
+            holder.itemTimeControls.setVisibility(View.INVISIBLE);
+            holder.itemplay.setEnabled(false);
+        }
+    }
+
+    @NonNull
+    @Override
+    public LyricListAdapter.LyricViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View mItemView = mInflator.inflate(R.layout.lyriclist_item, parent, false);
+        return new LyricViewHolder(mItemView, this);
+    }
+
+    @Override
+    public int getItemCount() {
+        return mLyricList.size();
+    }
+
+    void setClickListener(ItemClickListener itemClickListener) {
+        this.mClickListener = itemClickListener;
+    }
+
+    public interface ItemClickListener {
+        void onAddButtonClick(int position);
+
+        void onPlayButtonClick(int position);
+
+        void onIncreaseTimeClick(int position);
+
+        void onDecreaseTimeClick(int position);
+
+        void onLongPressIncrTime(int position);
+
+        void onLongPressDecrTime(int position);
+
+    }
+
     class LyricViewHolder extends RecyclerView.ViewHolder {
         private final TextView itemTextview;
         private final LinearLayout itemTimeControls;
@@ -35,6 +81,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         private final Button itembutton;
         final LyricListAdapter mAdapter;
 
+        @SuppressLint("ClickableViewAccessibility")
         LyricViewHolder(View itemView, LyricListAdapter adapter) {
             super(itemView);
             itemTextview = itemView.findViewById(R.id.item_text);
@@ -48,14 +95,16 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
                 @Override
                 public void onClick(View v) {
                     item_visible[getAdapterPosition()] = true;
-                    if (mClickListener != null) mClickListener.onAddButtonClick(getAdapterPosition());
+                    if (mClickListener != null)
+                        mClickListener.onAddButtonClick(getAdapterPosition());
                 }
             });
 
             itemplay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mClickListener != null) mClickListener.onPlayButtonClick(getAdapterPosition());
+                    if (mClickListener != null)
+                        mClickListener.onPlayButtonClick(getAdapterPosition());
                 }
             });
 
@@ -65,56 +114,38 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
             incrTime.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mClickListener != null) mClickListener.onIncreaseTimeClick(getAdapterPosition());
+                    if (mClickListener != null)
+                        mClickListener.onIncreaseTimeClick(getAdapterPosition());
+                }
+            });
+
+            incrTime.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mClickListener != null)
+                        mClickListener.onLongPressIncrTime(getAdapterPosition());
+                    return false;
                 }
             });
 
             decrTime.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mClickListener != null) mClickListener.onDecreaseTimeClick(getAdapterPosition());
+                    if (mClickListener != null)
+                        mClickListener.onDecreaseTimeClick(getAdapterPosition());
                 }
             });
+
+            decrTime.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mClickListener != null)
+                        mClickListener.onLongPressDecrTime(getAdapterPosition());
+                    return false;
+                }
+            });
+
         }
 
-    }
-
-    @NonNull
-    @Override
-    public LyricListAdapter.LyricViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View mItemView = mInflator.inflate(R.layout.lyriclist_item, parent, false);
-        return new LyricViewHolder(mItemView, this);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull LyricListAdapter.LyricViewHolder holder, int position) {
-        String mCurrent = mLyricList.get(position);
-        holder.itemTextview.setText(mCurrent);
-        if(item_visible[position]) {
-            holder.itemTimeControls.setVisibility(View.VISIBLE);
-            holder.itemplay.setVisibility(View.VISIBLE);
-            holder.itemTimeview.setText(lyric_times[position]);
-        }
-        else {
-            holder.itemTimeControls.setVisibility(View.INVISIBLE);
-            holder.itemplay.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        return mLyricList.size();
-    }
-
-    void setClickListener(ItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
-    }
-
-
-    public interface ItemClickListener {
-        void onAddButtonClick(int position);
-        void onPlayButtonClick(int position);
-        void onIncreaseTimeClick(int position);
-        void onDecreaseTimeClick(int position);
     }
 }

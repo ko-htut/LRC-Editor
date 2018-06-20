@@ -36,4 +36,5 @@
     <string name="save_location_description">Location for reading and saving lyric files:</string>
     <string name="save_location_button_text">Change this location</string>
     <string name="toolbar_settings_icon">Settings</string>
+    <string name="save_text">Save</string>
 </resources>

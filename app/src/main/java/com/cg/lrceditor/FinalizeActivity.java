@@ -164,7 +164,6 @@ public class FinalizeActivity extends AppCompatActivity {
                 .append("[ve: ").append(getString(R.string.version_string)).append("]\n")
                 .append("\n");
 
-        sb.append("[00:00.00]\n");
         for (int i = 0, len = timestamps.length; i < len; i++) {
             if (timestamps[i] != null) {
                 String lyric = mLyricList.get(i);

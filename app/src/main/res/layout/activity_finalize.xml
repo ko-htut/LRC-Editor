@@ -142,6 +142,6 @@
         android:layout_gravity="center|bottom"
         android:layout_marginTop="@dimen/normal_padding"
         android:onClick="saveLyrics"
-        android:text="@string/done_text" />
+        android:text="@string/save_text" />
 
 </LinearLayout>
