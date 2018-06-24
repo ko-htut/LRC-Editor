@@ -37,4 +37,5 @@
     <string name="save_location_button_text">Change this location</string>
     <string name="toolbar_settings_icon">Settings</string>
     <string name="save_text">Save</string>
+    <string name="remove_symbol">X</string>
 </resources>

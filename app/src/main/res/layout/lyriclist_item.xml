@@ -49,18 +49,18 @@
         android:textStyle="bold" />
 
     <Button
-        android:id="@+id/item_button"
+        android:id="@+id/item_add"
         android:layout_width="35dp"
-        android:layout_gravity="center"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="@string/plus_symbol" />
 
     <Button
         android:id="@+id/item_play"
-        android:layout_gravity="center"
         android:layout_width="35dp"
         android:layout_height="wrap_content"
-        android:text="@string/play"
-        android:enabled="false" />
+        android:layout_gravity="center"
+        android:enabled="false"
+        android:text="@string/play" />
 
 </LinearLayout>

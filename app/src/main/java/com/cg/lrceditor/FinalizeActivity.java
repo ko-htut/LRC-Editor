@@ -32,16 +32,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class FinalizeActivity extends AppCompatActivity {
 
     private static final int WRITE_EXTERNAL_REQUEST = 1;
 
-    private LinkedList<String> mLyricList;
-    private String[] timestamps;
+    private ArrayList<ItemData> lyricData;
+
     private Uri uri;
 
     private EditText songName;
@@ -60,8 +59,9 @@ public class FinalizeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_finalize);
 
         Intent intent = getIntent();
-        mLyricList = new LinkedList<>((List<String>) intent.getSerializableExtra("LYRICS"));
-        timestamps = intent.getStringArrayExtra("TIMESTAMPS");
+        //mLyricList = new LinkedList<>((List<String>) intent.getSerializableExtra("LYRICS"));
+        //timestamps = intent.getStringArrayExtra("TIMESTAMPS");
+        lyricData = (ArrayList<ItemData>) intent.getSerializableExtra("lyricData");
         uri = intent.getParcelableExtra("URI");
 
         songName = findViewById(R.id.songName_edittext);
@@ -164,10 +164,11 @@ public class FinalizeActivity extends AppCompatActivity {
                 .append("[ve: ").append(getString(R.string.version_string)).append("]\n")
                 .append("\n");
 
-        for (int i = 0, len = timestamps.length; i < len; i++) {
-            if (timestamps[i] != null) {
-                String lyric = mLyricList.get(i);
-                sb.append("[").append(timestamps[i]).append("]").append(lyric).append("\n");
+        for (int i = 0, len = lyricData.size(); i < len; i++) {
+            String timestamp = lyricData.get(i).getTimestamp();
+            if (timestamp != null) {
+                String lyric = lyricData.get(i).getLyric();
+                sb.append("[").append(timestamp).append("]").append(lyric).append("\n");
             }
         }
 
