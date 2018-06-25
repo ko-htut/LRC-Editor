@@ -84,6 +84,10 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         return lyricData.size();
     }
 
+    public void timestampSet(int position) {
+        timestampVisible[position] = true;
+    }
+
     public void toggleSelection(int pos) {
         if (selectedItems.get(pos, false)) {
             selectedItems.delete(pos);
@@ -137,8 +141,6 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
 
     public interface ItemClickListener {
         void onAddButtonClick(int position);
-
-        void onRemoveButtonClick(int position);
 
         void onPlayButtonClick(int position);
 

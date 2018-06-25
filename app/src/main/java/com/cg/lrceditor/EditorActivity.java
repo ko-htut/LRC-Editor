@@ -191,14 +191,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     }
 
     @Override
-    public void onRemoveButtonClick(int position) {
-        changedData = true;
-
-        mAdapter.lyricData.get(position).setTimestamp(null);
-        mAdapter.notifyItemChanged(position);
-    }
-
-    @Override
     public void onPlayButtonClick(int position) {
         if (!playerPrepared) {
             Toast.makeText(this, "Player not ready", Toast.LENGTH_SHORT).show();
@@ -511,10 +503,16 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
         for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
             String timestamp = mAdapter.lyricData.get(selectedItemPositions.get(i)).getTimestamp();
+            if (timestamp == null) {
+                timestamp = "00:00.00";
+            }
             int time = timeToMilli(timestamp) + milli;
+            if (time < 0)
+                time = 0;
             timestamp = String.format(Locale.getDefault(), "%02d:%02d.%02d",
                     getMinutes(time), getSeconds(time), getMilli(time));
             mAdapter.lyricData.get(selectedItemPositions.get(i)).setTimestamp(timestamp);
+            mAdapter.timestampSet(selectedItemPositions.get(i));
         }
 
         mAdapter.notifyDataSetChanged();
