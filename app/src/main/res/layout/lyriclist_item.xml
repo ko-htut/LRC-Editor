@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_parent_linearlayout"
     android:layout_width="match_parent"
     android:layout_height="@dimen/lyricitem_height"
     android:layout_marginEnd="@dimen/lyricitem_margin"
     android:layout_marginLeft="@dimen/lyricitem_margin"
     android:layout_marginRight="@dimen/lyricitem_margin"
     android:layout_marginStart="@dimen/lyricitem_margin"
+    android:background="@drawable/bg_list_row"
     android:orientation="horizontal"
     android:padding="@dimen/item_padding">
 

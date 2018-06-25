@@ -11,4 +11,5 @@
     <dimen name="normal_padding">15dp</dimen>
     <dimen name="small_font">10sp</dimen>
     <dimen name="default_height">35dp</dimen>
+    <dimen name="dialog_margin">18dp</dimen>
 </resources>

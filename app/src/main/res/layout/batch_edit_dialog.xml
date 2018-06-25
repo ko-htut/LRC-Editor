@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/batch_edit_dialog_parent_linearlayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dialog_margin"
+        android:layout_marginRight="@dimen/dialog_margin"
+        android:layout_marginTop="@dimen/dialog_margin"
+        android:text="@string/batch_edit_prompt"
+        android:textSize="@dimen/media_title_size"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/batch_increase_time_button"
+        android:layout_width="150dp"
+        android:layout_height="40dp"
+        android:text="@string/plus_symbol" />
+
+    <TextView
+        android:id="@+id/batch_item_time"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:gravity="center"
+        android:text="@string/default_time" />
+
+    <Button
+        android:id="@+id/batch_decrease_time_button"
+        android:layout_width="150dp"
+        android:layout_height="40dp"
+        android:text="@string/minus_symbol" />
+
+</LinearLayout>
