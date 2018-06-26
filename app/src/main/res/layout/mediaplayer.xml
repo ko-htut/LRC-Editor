@@ -15,8 +15,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
             android:layout_alignParentStart="true"
             android:layout_margin="@dimen/timetext_offset"
             android:ellipsize="marquee"
@@ -41,9 +39,7 @@
             android:id="@+id/startText"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_marginLeft="@dimen/timetext_offset"
             android:layout_marginStart="@dimen/timetext_offset"
             android:gravity="center"
             android:maxLines="1"
@@ -59,8 +55,6 @@
             android:layout_marginLeft="@dimen/seekBar_offsets"
             android:layout_marginRight="@dimen/seekBar_offsets"
             android:layout_toEndOf="@id/startText"
-            android:layout_toLeftOf="@id/endText"
-            android:layout_toRightOf="@id/startText"
             android:layout_toStartOf="@id/endText" />
 
         <TextView
@@ -68,9 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:layout_marginEnd="@dimen/timetext_offset"
-            android:layout_marginRight="@dimen/timetext_offset"
             android:gravity="center"
             android:maxLines="1"
             android:text="@string/default_timetext"
@@ -89,8 +81,8 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:contentDescription="@string/prev_description"
-            android:onClick="rewind10"
-            android:text="@string/previous_10_text" />
+            android:onClick="rewind5"
+            android:text="@string/previous_5_text" />
 
         <Button
             android:id="@+id/play_pause"
@@ -99,7 +91,7 @@
             android:layout_weight="2"
             android:contentDescription="@string/play_description"
             android:onClick="playPause"
-            android:text="@string/play_text" />
+            android:text="@string/play_symbol" />
 
         <Button
             android:id="@+id/forward"
@@ -107,8 +99,8 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:contentDescription="@string/forward_description"
-            android:onClick="forward10"
-            android:text="@string/forward_10_text" />
+            android:onClick="forward5"
+            android:text="@string/forward_5_text" />
 
     </LinearLayout>
 

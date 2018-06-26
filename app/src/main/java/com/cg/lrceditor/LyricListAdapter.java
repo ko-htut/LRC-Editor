@@ -17,7 +17,6 @@ import java.util.List;
 
 public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.LyricViewHolder> {
     public final List<ItemData> lyricData;
-    private boolean[] timestampVisible;
     private LayoutInflater mInflator;
     private SparseBooleanArray selectedItems;
 
@@ -26,14 +25,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
     LyricListAdapter(Context context, List<ItemData> lyricData) {
         mInflator = LayoutInflater.from(context);
         this.lyricData = lyricData;
-        timestampVisible = new boolean[this.lyricData.size()];
         selectedItems = new SparseBooleanArray();
-
-        for (int i = 0, len = this.lyricData.size(); i < len; i++) {
-            if (this.lyricData.get(i).getTimestamp() != null) {
-                timestampVisible[i] = true;
-            }
-        }
     }
 
     @Override
@@ -41,7 +33,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         String mCurrent = lyricData.get(position).getLyric();
         holder.itemTextview.setText(mCurrent);
 
-        if (timestampVisible[position]) {
+        if (lyricData.get(position).getTimestamp() != null) {
             holder.itemTimeControls.setVisibility(View.VISIBLE);
             holder.itemplay.setEnabled(true);
             holder.itemTimeview.setText(lyricData.get(position).getTimestamp());
@@ -84,10 +76,6 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         return lyricData.size();
     }
 
-    public void timestampSet(int position) {
-        timestampVisible[position] = true;
-    }
-
     public void toggleSelection(int pos) {
         if (selectedItems.get(pos, false)) {
             selectedItems.delete(pos);
@@ -117,18 +105,8 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         return items;
     }
 
-    public void notifyNewTimestamp(int position) {
-        boolean[] temp = new boolean[this.lyricData.size()];
-        System.arraycopy(this.timestampVisible, 0, temp, 0, position);
-        temp[position] = false;
-        System.arraycopy(this.timestampVisible, position + 1 - 1, temp, position + 1, this.lyricData.size() - (position + 1));
-        this.timestampVisible = temp;
-    }
-
-
-    public void removeLyrics(int position) {
+    public void removeTimestamp(int position) {
         lyricData.get(position).setTimestamp(null);
-        timestampVisible[position] = false;
     }
 
     public int getSelectionCount() {
@@ -184,7 +162,6 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
             itemadd.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    timestampVisible[getAdapterPosition()] = true;
                     mClickListener.onAddButtonClick(getAdapterPosition());
                 }
             });

@@ -39,8 +39,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
     private static final int FILE_REQUEST = 1;
 
-    private ArrayList<ItemData> lyricData;
-
     private RecyclerView mRecyclerView;
     private LyricListAdapter mAdapter;
 
@@ -103,6 +101,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         Toolbar toolbar = findViewById(R.id.Editortoolbar);
         setSupportActionBar(toolbar);
 
+        ArrayList<ItemData> lyricData;
+
         Intent intent = getIntent();
 
         if (intent.getData() != null) {                /* LRC File opened from elsewhere */
@@ -115,12 +115,12 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
             String[] lyrics = r.getLyrics();
             String[] timestamps = r.getTimestamps();
-            populateDataSet(lyrics, timestamps);
+            lyricData = populateDataSet(lyrics, timestamps);
 
         } else {
             String[] lyrics = intent.getStringArrayExtra("LYRICS");
             String[] timestamps = intent.getStringArrayExtra("TIMESTAMPS");
-            populateDataSet(lyrics, timestamps);
+            lyricData = populateDataSet(lyrics, timestamps);
         }
 
         mRecyclerView = findViewById(R.id.recyclerview);
@@ -149,8 +149,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         seekbar.setOnSeekBarChangeListener(this);
     }
 
-    private void populateDataSet(String[] lyrics, String[] timestamps) {
-        lyricData = new ArrayList<>();
+    private ArrayList<ItemData> populateDataSet(String[] lyrics, String[] timestamps) {
+        ArrayList<ItemData> lyricData = new ArrayList<>();
 
         if (!lyrics[0].trim().isEmpty())
             lyricData.add(new ItemData("", "00:00.00"));
@@ -164,6 +164,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
         if (!lyrics[lyrics.length - 1].trim().isEmpty())
             lyricData.add(new ItemData("", null));
+
+        return lyricData;
     }
 
     @Override
@@ -200,7 +202,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         String time = mAdapter.lyricData.get(position).getTimestamp();
         player.seekTo(timeToMilli(time));
         if (!isPlaying) {
-            play_pause.setText(R.string.pause_text);
+            play_pause.setText(R.string.pause_symbol);
             player.start();
             isPlaying = true;
         }
@@ -223,7 +225,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
         if (playerPrepared) {
             player.seekTo((int) milli);
-            play_pause.setText(R.string.pause_text);
+            play_pause.setText(R.string.pause_symbol);
             player.start();
             isPlaying = true;
             songTimeUpdater.post(updateSongTime);
@@ -248,7 +250,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
         if (playerPrepared) {
             player.seekTo((int) milli);
-            play_pause.setText(R.string.pause_text);
+            play_pause.setText(R.string.pause_symbol);
             player.start();
             isPlaying = true;
             songTimeUpdater.post(updateSongTime);
@@ -375,10 +377,10 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         }
 
         if (isPlaying) {
-            play_pause.setText(R.string.play_text);
+            play_pause.setText(R.string.play_symbol);
             player.pause();
         } else {
-            play_pause.setText(R.string.pause_text);
+            play_pause.setText(R.string.pause_symbol);
             player.start();
         }
         isPlaying = !isPlaying;
@@ -397,23 +399,23 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         songTimeUpdater.post(updateSongTime);
     }
 
-    public void rewind10(View view) {
+    public void rewind5(View view) {
         if (!playerPrepared) {
             Toast.makeText(this, "Player not ready", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        player.seekTo(player.getCurrentPosition() - 10 * 1000);
+        player.seekTo(player.getCurrentPosition() - 5 * 1000);
         songTimeUpdater.post(updateSongTime);
     }
 
-    public void forward10(View view) {
+    public void forward5(View view) {
         if (!playerPrepared) {
             Toast.makeText(this, "Player not ready", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        player.seekTo(player.getCurrentPosition() + 10 * 1000);
+        player.seekTo(player.getCurrentPosition() + 5 * 1000);
         songTimeUpdater.post(updateSongTime);
     }
 
@@ -448,7 +450,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        play_pause.setText(R.string.play_text);
+        play_pause.setText(R.string.play_symbol);
         isPlaying = false;
     }
 
@@ -465,7 +467,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             if (resultData != null) {
                 Uri uri = resultData.getData();
 
-                play_pause.setText(R.string.play_text);
+                play_pause.setText(R.string.play_symbol);
                 isPlaying = false;
 
                 player.reset();
@@ -487,15 +489,28 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         actionMode.invalidate();
     }
 
-    private void removeLyrics() {
-        List<Integer> selectedItemPositions =
-                mAdapter.getSelectedItems();
-        for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
-            mAdapter.removeLyrics(selectedItemPositions.get(i));
-        }
-        mAdapter.notifyDataSetChanged();
+    private void removeTimestamps() {
+        new AlertDialog.Builder(this)
+                .setTitle("Confirmation")
+                .setMessage("Are you sure you want to delete the timestamps of the selected lyrics?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        List<Integer> selectedItemPositions =
+                                mAdapter.getSelectedItems();
+                        for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
+                            mAdapter.removeTimestamp(selectedItemPositions.get(i));
+                        }
+                        mAdapter.notifyDataSetChanged();
 
-        actionMode = null;
+                        actionMode.finish();
+                        actionMode = null;
+                    }
+                })
+                .setNegativeButton("No", null)
+                .create()
+                .show();
+
     }
 
     private void offsetTimestamps(int milli) {
@@ -512,7 +527,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             timestamp = String.format(Locale.getDefault(), "%02d:%02d.%02d",
                     getMinutes(time), getSeconds(time), getMilli(time));
             mAdapter.lyricData.get(selectedItemPositions.get(i)).setTimestamp(timestamp);
-            mAdapter.timestampSet(selectedItemPositions.get(i));
         }
 
         mAdapter.notifyDataSetChanged();
@@ -562,7 +576,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
                             mAdapter.lyricData.add(position,
                                     new ItemData(editText.getText().toString(), null));
-                            mAdapter.notifyNewTimestamp(position);
                             mAdapter.notifyDataSetChanged();
 
                         } else if (lyric_change == 2) {  /* Edit selected lyric */
@@ -574,7 +587,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
                             mAdapter.lyricData.add(position + 1,
                                     new ItemData(editText.getText().toString(), null));
-                            mAdapter.notifyNewTimestamp(position + 1);
                             mAdapter.notifyDataSetChanged();
 
                         }
@@ -737,7 +749,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(view)
                 .setTitle("Batch Edit")
-                .setPositiveButton("Change", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Adjust", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         changedData = true;
@@ -774,7 +786,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         switch (item.getItemId()) {
             case R.id.action_done:
                 Intent intent = new Intent(this, FinalizeActivity.class);
-                intent.putExtra("lyricData", this.lyricData);
+                intent.putExtra("lyricData", (ArrayList<ItemData>) mAdapter.lyricData);
                 intent.putExtra("URI", uri);
 
                 startActivity(intent);
@@ -808,7 +820,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     private void reset() {
         stopUpdating = true;
         player.stop();
-        play_pause.setText(R.string.play_text);
+        play_pause.setText(R.string.play_symbol);
         isPlaying = false;
         playerPrepared = false;
         player.release();
@@ -831,8 +843,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             int lyric_change;
             switch (item.getItemId()) {
                 case R.id.action_delete:
-                    removeLyrics();
-                    mode.finish();
+                    removeTimestamps();
                     return true;
 
                 case R.id.action_edit:

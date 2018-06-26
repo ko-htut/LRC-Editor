@@ -63,6 +63,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:enabled="false"
-        android:text="@string/play" />
+        android:text="@string/play_symbol" />
 
 </LinearLayout>

@@ -59,8 +59,6 @@ public class FinalizeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_finalize);
 
         Intent intent = getIntent();
-        //mLyricList = new LinkedList<>((List<String>) intent.getSerializableExtra("LYRICS"));
-        //timestamps = intent.getStringArrayExtra("TIMESTAMPS");
         lyricData = (ArrayList<ItemData>) intent.getSerializableExtra("lyricData");
         uri = intent.getParcelableExtra("URI");
 
