@@ -90,6 +90,10 @@ public class LyricReader {
             }
 
             String[] items = lyrics.toString().split("\\n");
+            if(items.length == 0) { /* Edge case */
+                items = new String[1];
+                items[0] = "";
+            }
             int size = items.length;
             this.lyrics = new String[size];
             this.timestamps = new String[size];
