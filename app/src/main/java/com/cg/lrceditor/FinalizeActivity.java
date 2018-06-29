@@ -26,6 +26,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
@@ -52,6 +57,8 @@ public class FinalizeActivity extends AppCompatActivity {
 
     private String saveLocation;
     private Uri saveUri;
+
+    private InterstitialAd mInterstitialAd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +88,8 @@ public class FinalizeActivity extends AppCompatActivity {
             artistName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
             composerName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER));
         }
+
+        setupAds();
     }
 
     @Override
@@ -149,6 +158,10 @@ public class FinalizeActivity extends AppCompatActivity {
         resultTextView.setTextColor(Color.rgb(45, 168, 26));
         resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
                 saveLocation + "/" + songName.getText().toString() + ".lrc"));
+
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        }
     }
 
     private String lyricsToString() {
@@ -237,5 +250,17 @@ public class FinalizeActivity extends AppCompatActivity {
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equals(state);
+    }
+
+    private void setupAds() {
+        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
+
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
     }
 }
