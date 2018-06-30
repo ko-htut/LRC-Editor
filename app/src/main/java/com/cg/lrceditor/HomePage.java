@@ -27,7 +27,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.io.File;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 public class HomePage extends AppCompatActivity implements HomePageListAdapter.LyricFileSelectListener {
@@ -62,6 +67,16 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         if (permissionAlreadyGranted) {
             scan_lyrics();
         }
+
+        setupAds();
+    }
+
+    private void setupAds() {
+        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
+
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     @Override
@@ -114,7 +129,9 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
 
         LinkedList<File> list = new LinkedList<>();
-        for (File file : f.listFiles()) {
+        File[] fileList = f.listFiles();
+        Arrays.sort(fileList);
+        for (File file : fileList) {
             if (file.getName().endsWith(".lrc")) {
                 list.addLast(file);
             }

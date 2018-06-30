@@ -1,147 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="@dimen/normal_padding"
-    android:animateLayoutChanges="true"
-    android:orientation="vertical"
-    tools:context=".FinalizeActivity">
+    android:scrollbars="vertical">
 
-    <TextView
-        android:id="@+id/final_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/finalization_header"
-        android:textSize="25sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/optional_data_textview"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/normal_padding"
-        android:gravity="center"
-        android:text="@string/optional_string"
-        android:textSize="@dimen/small_font"
-        android:textStyle="italic" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:scrollbars="vertical"
+        tools:context=".FinalizeActivity">
 
         <TextView
-            android:id="@+id/songName"
+            android:id="@+id/final_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:text="@string/song_name_prompt" />
+            android:gravity="center"
+            android:text="@string/finalization_header"
+            android:textSize="25sp"
+            android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/songName_edittext"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:inputType="text"
-            android:maxLines="1" />
+            android:orientation="horizontal">
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/songName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight="1"
+                android:text="@string/song_name_prompt" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <EditText
+                android:id="@+id/songName_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight=".6"
+                android:hint="@string/song_name_hint"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/albumName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight="1"
+                android:text="@string/album_name_prompt" />
+
+            <EditText
+                android:id="@+id/albumName_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight=".6"
+                android:hint="@string/album_name_hint"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/artistName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight="1"
+                android:text="@string/artist_name_prompt" />
+
+            <EditText
+                android:id="@+id/artistName_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight=".6"
+                android:hint="@string/artist_name_hint"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/composer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight="1"
+                android:text="@string/composer_prompt" />
+
+            <EditText
+                android:id="@+id/composer_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/normal_padding"
+                android:layout_weight=".6"
+                android:hint="@string/composer_name_hint"
+                android:inputType="text"
+                android:maxLines="1" />
+
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/albumName"
+            android:id="@+id/result_textview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/default_height"
             android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:text="@string/album_name_prompt" />
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="2"
+            android:scrollHorizontally="true"
+            android:text="@string/processing_string"
+            android:visibility="invisible" />
 
-        <EditText
-            android:id="@+id/albumName_edittext"
+        <Button
+            android:id="@+id/done_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="@dimen/normal_padding"
+            android:layout_marginTop="@dimen/normal_padding"
+            android:onClick="saveLyrics"
+            android:text="@string/save_text" />
+
+        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/adView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:inputType="text"
-            android:maxLines="1" />
+            android:layout_gravity="bottom"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-3940256099942544/6300978111" />
 
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/artistName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:text="@string/artist_name_prompt" />
-
-        <EditText
-            android:id="@+id/artistName_edittext"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:inputType="text"
-            android:maxLines="1" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/composer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:text="@string/composer_prompt" />
-
-        <EditText
-            android:id="@+id/composer_edittext"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/normal_padding"
-            android:layout_weight="1"
-            android:inputType="text"
-            android:maxLines="1" />
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/result_textview"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/default_height"
-        android:layout_margin="@dimen/normal_padding"
-        android:gravity="center"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:scrollHorizontally="true"
-        android:text="@string/processing_string"
-        android:visibility="invisible" />
-
-    <Button
-        android:id="@+id/done_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center|bottom"
-        android:layout_marginTop="@dimen/normal_padding"
-        android:onClick="saveLyrics"
-        android:text="@string/save_text" />
-
-</LinearLayout>
+</ScrollView>
