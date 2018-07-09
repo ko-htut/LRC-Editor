@@ -64,6 +64,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
             }
         });
     }
+
     @NonNull
     @Override
     public LyricListAdapter.LyricViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -103,10 +104,6 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
             items.add(selectedItems.keyAt(i));
         }
         return items;
-    }
-
-    public void removeTimestamp(int position) {
-        lyricData.get(position).setTimestamp(null);
     }
 
     public int getSelectionCount() {

@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,15 +16,20 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,14 +40,21 @@ import com.google.android.gms.ads.MobileAds;
 import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 public class HomePage extends AppCompatActivity implements HomePageListAdapter.LyricFileSelectListener {
 
     private static final int WRITE_EXTERNAL_REQUEST = 1;
-    private boolean permissionAlreadyGranted = false;
+    private boolean storagePermissionAlreadyGranted = false;
     private boolean scannedOnce = false;
 
     private String saveLocation;
+    private Uri saveUri;
+
+    private HomePageListAdapter mAdapter;
+
+    private ActionModeCallback actionModeCallback;
+    private ActionMode actionMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +77,11 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
                 .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
 
         ready_fileIO();
-        if (permissionAlreadyGranted) {
+        if (storagePermissionAlreadyGranted) {
             scan_lyrics();
         }
+
+        actionModeCallback = new ActionModeCallback();
 
         setupAds();
     }
@@ -84,7 +99,12 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         super.onResume();
         saveLocation = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
                 .getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
-        if (permissionAlreadyGranted)
+        String uriString = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE)
+                .getString("saveUri", null);
+        if (uriString != null)
+            saveUri = Uri.parse(uriString);
+
+        if (storagePermissionAlreadyGranted)
             scan_lyrics();
     }
 
@@ -137,9 +157,14 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
             }
         }
 
-        HomePageListAdapter adapter = new HomePageListAdapter(this, list);
-        recyclerView.setAdapter(adapter);
-        adapter.setClickListener(this);
+        if (mAdapter == null) {
+            mAdapter = new HomePageListAdapter(this, list);
+            recyclerView.setAdapter(mAdapter);
+            mAdapter.setClickListener(this);
+        } else {
+            mAdapter.mFileList = list;
+            mAdapter.notifyDataSetChanged();
+        }
 
         if (scannedOnce) {
             return;
@@ -163,6 +188,8 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
 
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
+        else
+            storagePermissionAlreadyGranted = true;
     }
 
     private void grantPermission() {
@@ -173,7 +200,7 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_REQUEST);
         } else
-            permissionAlreadyGranted = true;
+            storagePermissionAlreadyGranted = true;
     }
 
     private void displayDialog() {
@@ -274,7 +301,190 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         Intent intent = new Intent(this, EditorActivity.class);
         intent.putExtra("LYRICS", r.getLyrics());
         intent.putExtra("TIMESTAMPS", r.getTimestamps());
+        intent.putExtra("SONG METADATA", r.getSongMetaData());
 
         startActivity(intent);
+    }
+
+    @Override
+    public void onLyricItemSelected(int position) {
+        if (actionMode == null) {
+            actionMode = startSupportActionMode(actionModeCallback);
+        }
+
+        toggleSelection(position);
+    }
+
+    @Override
+    public void onLyricItemClicked(int position) {
+        if (actionMode == null)
+            return;
+
+        toggleSelection(position);
+    }
+
+    private void toggleSelection(int position) {
+        mAdapter.toggleSelection(position);
+        int count = mAdapter.getSelectionCount();
+
+        if (count == 0) {
+            actionMode.finish();
+            actionMode = null;
+        } else {
+            Menu menu = actionMode.getMenu();
+            MenuItem itemRename = menu.findItem(R.id.action_rename_homepage);
+            if (count >= 2) {
+                itemRename.setVisible(false);
+            } else {
+                itemRename.setVisible(true);
+            }
+
+            actionMode.setTitle(String.valueOf(count));
+            actionMode.invalidate();
+        }
+    }
+
+    private void removeLyricFiles() {
+        new AlertDialog.Builder(this)
+                .setTitle("Confirmation")
+                .setMessage("Are you sure you want to delete the selected LRC files?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        List<Integer> selectedItemPositions =
+                                mAdapter.getSelectedItems();
+                        DocumentFile pickedDir = getPersistableDocumentFile();
+
+                        boolean deleteFailure = false;
+
+                        for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
+                            DocumentFile file = pickedDir.findFile(mAdapter.mFileList.get(selectedItemPositions.get(i)).getName());
+                            if(file == null || !file.delete())
+                                deleteFailure = true;
+                        }
+                        scan_lyrics();
+
+                        if(deleteFailure) {
+                            Toast.makeText(getApplicationContext(), "Failed to delete some/all the selected LRC files!", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Deleted selected LRC files successfully", Toast.LENGTH_LONG).show();
+                        }
+
+                        actionMode.finish();
+                        actionMode = null;
+                    }
+                })
+                .setNegativeButton("No", null)
+                .create()
+                .show();
+
+    }
+
+    private void renameLyricFile() {
+        LayoutInflater inflater = this.getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_layout, null);
+        final EditText editText = view.findViewById(R.id.dialog_edittext);
+        TextView textView = view.findViewById(R.id.dialog_prompt);
+
+        final String fileName = mAdapter.mFileList.get(mAdapter.getSelectedItems().get(0)).getName();
+        textView.setText(getString(R.string.new_file_name_prompt));
+        editText.setText(fileName);
+
+        editText.setHint(getString(R.string.new_file_name_hint));
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .setPositiveButton("Rename", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setNewFileName(editText.getText().toString(), fileName);
+                        actionMode.finish();
+                        actionMode = null;
+                     }
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.show();
+    }
+
+    private void setNewFileName(String newName, String fileName) {
+        DocumentFile pickedDir = getPersistableDocumentFile();
+
+        if(new File(saveLocation, newName).exists())
+            Toast.makeText(this, "File name already exists. Prefix might be added", Toast.LENGTH_LONG).show();
+
+        DocumentFile file = pickedDir.findFile(fileName);
+        if(file != null && file.renameTo(newName)) {
+            Toast.makeText(this, "Renamed file successfully", Toast.LENGTH_LONG).show();
+            scan_lyrics();
+        }
+        else
+            Toast.makeText(this, "Rename failed!", Toast.LENGTH_LONG).show();
+
+    }
+
+    private DocumentFile getPersistableDocumentFile() {
+        DocumentFile pickedDir;
+        try {
+            pickedDir = DocumentFile.fromTreeUri(this, saveUri);
+            grantUriPermission(getPackageName(), saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            pickedDir = DocumentFile.fromFile(new File(saveLocation));
+        }
+
+        return pickedDir;
+    }
+
+    private void selectAll() {
+        mAdapter.selectAll();
+        int count = mAdapter.getSelectionCount();
+
+        if(count >= 2)
+            actionMode.getMenu().findItem(R.id.action_rename_homepage).setVisible(false);
+
+        actionMode.setTitle(String.valueOf(count));
+        actionMode.invalidate();
+    }
+
+    private class ActionModeCallback implements ActionMode.Callback {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.contextual_toolbar_homepageactivity, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            int lyric_change;
+            switch (item.getItemId()) {
+                case R.id.action_delete_homepage:
+                    removeLyricFiles();
+                    return true;
+
+                case R.id.action_rename_homepage:
+                    renameLyricFile();
+                    return true;
+
+                case R.id.action_select_all_homepage:
+                    selectAll();
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mAdapter.clearSelections();
+            actionMode = null;
+        }
     }
 }

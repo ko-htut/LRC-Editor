@@ -2,6 +2,9 @@ package com.cg.lrceditor;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,6 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -67,6 +71,7 @@ public class FinalizeActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         lyricData = (ArrayList<ItemData>) intent.getSerializableExtra("lyricData");
+        SongMetaData songMetaData = (SongMetaData) intent.getSerializableExtra("SONG METADATA");
         uri = intent.getParcelableExtra("URI");
 
         songName = findViewById(R.id.songName_edittext);
@@ -79,14 +84,33 @@ public class FinalizeActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
 
-        if (uri != null) {
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            mmr.setDataSource(this, uri);
+        if (songMetaData != null) {
+            if (!songMetaData.getSongName().isEmpty())
+                songName.setText(songMetaData.getSongName());
+            if (!songMetaData.getArtistName().isEmpty())
+                artistName.setText(songMetaData.getArtistName());
+            if (!songMetaData.getAlbumName().isEmpty())
+                albumName.setText(songMetaData.getAlbumName());
+            if (!songMetaData.getComposerName().isEmpty())
+                composerName.setText(songMetaData.getComposerName());
+        }
 
-            songName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
-            albumName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
-            artistName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
-            composerName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER));
+        if (uri != null) {
+            try {
+                MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+                mmr.setDataSource(this, uri);
+
+                if (songName.getText().toString().isEmpty())
+                    songName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE));
+                if (albumName.getText().toString().isEmpty())
+                    albumName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM));
+                if (artistName.getText().toString().isEmpty())
+                    artistName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST));
+                if (composerName.getText().toString().isEmpty())
+                    composerName.setText(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_COMPOSER));
+            } catch (IllegalArgumentException e) {
+                Toast.makeText(this, "Failed to extract media metadata", Toast.LENGTH_LONG).show();
+            }
         }
 
         setupAds();
@@ -109,52 +133,96 @@ public class FinalizeActivity extends AppCompatActivity {
             return;
         }
 
+        resultTextView.setText(getString(R.string.processing_string));
+        resultTextView.setTextColor(Color.BLACK);
         resultTextView.setVisibility(View.VISIBLE);
+
+        Button copy_error = findViewById(R.id.copy_error_button);
+        copy_error.setVisibility(View.GONE);
 
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
 
+        final String path;
         if (saveUri != null) {
-            DocumentFile pickedDir = DocumentFile.fromTreeUri(this, saveUri);
-            grantUriPermission(getPackageName(), saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-            DocumentFile file = pickedDir.createFile("application/*", songName.getText().toString() + ".lrc");
-            try {
-                OutputStream out = getContentResolver().openOutputStream(file.getUri());
-                InputStream in = new ByteArrayInputStream(lyricsToString().getBytes("UTF-8"));
-
-                byte[] buffer = new byte[1024];
-                int read;
-                while ((read = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, read);
-                }
-                in.close();
-
-
-                out.flush();
-                out.close();
-
-            } catch (IOException | NullPointerException e) {
-                e.printStackTrace();
-                resultTextView.setTextColor(Color.rgb(198, 27, 27));
-                resultTextView.setText(String.format(Locale.getDefault(), "Whoops! An Error Ocurred!\n%s", e.getMessage()));
-                return;
-            }
-
+            path = FileUtil.getFullPathFromTreeUri(saveUri, this);
         } else {
-            try (FileWriter writer = new FileWriter(new File(saveLocation,
-                    songName.getText().toString() + ".lrc"))) {
-                writer.write(lyricsToString());
-                writer.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-                resultTextView.setTextColor(Color.rgb(198, 27, 27));
-                resultTextView.setText(String.format(Locale.getDefault(), "Whoops! An Error Ocurred!\n%s", e.getMessage()));
-                return;
-            }
+            path = saveLocation;
         }
 
+        if (path != null) {
+            final File f = new File(path + "/" + songName.getText().toString() + ".lrc");
+            if (f.exists()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Warning")
+                        .setMessage("File '" + songName.getText().toString() + ".lrc' already exists in " + saveLocation + ". " +
+                                "Are you sure you want to overwrite it?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (!deletefile()) {
+                                    Toast.makeText(getApplicationContext(), "Failed to overwrite file; Suffix will be appended to the file name", Toast.LENGTH_LONG).show();
+                                }
+
+                                writeLyricsExternal();
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                resultTextView.setVisibility(View.GONE);
+                            }
+                        })
+                        .show();
+            } else {
+                writeLyricsExternal();
+            }
+        } else {
+            writeLyricsExternal();
+        }
+    }
+
+
+    private void writeLyricsExternal() {
+        DocumentFile pickedDir;
+        try {
+            pickedDir = DocumentFile.fromTreeUri(this, saveUri);
+            grantUriPermission(getPackageName(), saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            pickedDir = DocumentFile.fromFile(new File(saveLocation));
+        }
+
+        DocumentFile file = pickedDir.createFile("application/*", songName.getText().toString() + ".lrc");
+        try {
+            OutputStream out = getContentResolver().openOutputStream(file.getUri());
+            InputStream in = new ByteArrayInputStream(lyricsToString().getBytes("UTF-8"));
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+
+            out.flush();
+            out.close();
+
+            saveSuccessful();
+
+        } catch (IOException | NullPointerException e) {
+            e.printStackTrace();
+            resultTextView.setTextColor(Color.rgb(198, 27, 27));
+            resultTextView.setText(String.format(Locale.getDefault(), "Whoops! An Error Occurred!\n%s", e.getMessage()));
+
+            Button copy_error = findViewById(R.id.copy_error_button);
+            copy_error.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    private void saveSuccessful() {
         resultTextView.setTextColor(Color.rgb(45, 168, 26));
         resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
                 saveLocation + "/" + songName.getText().toString() + ".lrc"));
@@ -162,6 +230,20 @@ public class FinalizeActivity extends AppCompatActivity {
         if (mInterstitialAd.isLoaded()) {
             mInterstitialAd.show();
         }
+    }
+
+    private boolean deletefile() {
+        DocumentFile pickedDir;
+        try {
+            pickedDir = DocumentFile.fromTreeUri(this, saveUri);
+            grantUriPermission(getPackageName(), saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            pickedDir = DocumentFile.fromFile(new File(saveLocation));
+        }
+
+        DocumentFile file = pickedDir.findFile(songName.getText().toString() + ".lrc");
+        return file != null && file.delete();
     }
 
     private String lyricsToString() {
@@ -260,7 +342,33 @@ public class FinalizeActivity extends AppCompatActivity {
         mAdView.loadAd(adRequest);
 
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
+    }
+
+    public void copy_lrc(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Generated LRC data", lyricsToString());
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
+        } else {
+            Toast.makeText(this, "Failed to fetch the System Clipboard Service!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Toast.makeText(this, "Successfully copied the LRC file data into the System Clipboard!", Toast.LENGTH_LONG).show();
+    }
+
+    public void copy_error(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Save Error Info", resultTextView.getText().toString());
+        if (clipboard != null) {
+            clipboard.setPrimaryClip(clip);
+        } else {
+            Toast.makeText(this, "Failed to fetch the System Clipboard Service!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Toast.makeText(this, "Successfully copied the generated error into the System Clipboard!", Toast.LENGTH_LONG).show();
     }
 }
