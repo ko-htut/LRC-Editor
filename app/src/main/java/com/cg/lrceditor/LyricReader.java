@@ -2,6 +2,7 @@ package com.cg.lrceditor;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -19,6 +20,8 @@ public class LyricReader {
 
     private String[] lyrics = null;
     private String[] timestamps = null;
+
+    private SongMetaData songMetaData = new SongMetaData();
 
     private String errorMsg;
 
@@ -73,11 +76,27 @@ public class LyricReader {
                     if (temp.matches("^(\\[\\d\\d:\\d\\d[.|:]\\d\\d]).*$")) {
                         timestamps.add(temp.substring(1, 9));
                         count++;
+                    } else if (songMetaData.getSongName().isEmpty() && temp.matches("^\\[ti:.*]$")) {
+                        songMetaData.setSongName(temp.substring(4, temp.length() - 1).trim());
+                        break;
+                    } else if (songMetaData.getArtistName().isEmpty() && temp.matches("^\\[ar:.*]$")) {
+                        songMetaData.setArtistName(temp.substring(4, temp.length() - 1).trim());
+                        break;
+                    } else if (songMetaData.getAlbumName().isEmpty() && temp.matches("^\\[al:.*]$")) {
+                        songMetaData.setAlbumName(temp.substring(4, temp.length() - 1).trim());
+                        break;
+                    } else if (songMetaData.getComposerName().isEmpty() && temp.matches("^\\[au:.*]$")) {
+                        songMetaData.setComposerName(temp.substring(4, temp.length() - 1).trim());
+                        break;
                     } else break;
                 }
                 if (count > 1) {
                     needToSort = true;
                 }
+
+                if (temp.trim().isEmpty())
+                    temp = " ";
+
                 for (int i = 0; i < count; i++) {
                     lyrics.append(temp);
                     lyrics.append("\n");
@@ -182,5 +201,9 @@ public class LyricReader {
 
     public String getErrorMsg() {
         return errorMsg;
+    }
+
+    public SongMetaData getSongMetaData() {
+        return songMetaData;
     }
 }

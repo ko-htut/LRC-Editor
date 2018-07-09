@@ -47,10 +47,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                     editor.putString("saveLocation", realPath);
                     try {
-                        if (!(uri.getPath().split("/")[2].startsWith("primary")))
-                            editor.putString("saveUri", uri.toString());
-                        else
-                            editor.putString("saveUri", null);
+                        editor.putString("saveUri", uri.toString());
                     } catch (ArrayIndexOutOfBoundsException ignored) {
                         editor.putString("saveUri", null);
                     }
