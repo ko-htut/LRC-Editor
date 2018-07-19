@@ -38,5 +38,13 @@
         android:layout_marginRight="@dimen/normal_padding"
         android:gravity="center"
         android:text="@string/rate_and_feedback_string"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight=".05"
+        android:layout_marginBottom="35dp"
+        android:layout_gravity="center_horizontal"
+        android:onClick="rate_and_review"
+        android:text="@string/rate_and_review_text" />
 
 </LinearLayout>

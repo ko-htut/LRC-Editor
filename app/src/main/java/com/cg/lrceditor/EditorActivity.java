@@ -491,7 +491,6 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                 Uri uri = resultData.getData();
 
                 if (uri != null) {
-                    grantUriPermission(getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                     play_pause.setText(R.string.play_symbol);
