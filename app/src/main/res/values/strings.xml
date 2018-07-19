@@ -62,4 +62,5 @@
     <string name="copy_error_text">Copy error ⎘</string>
     <string name="title_error_message">An unexpected error occurred trying to set the title</string>
     <string name="add_a_lyric_text">Add a lyric</string>
+    <string name="rate_and_review_text">Rate and Review the App</string>
 </resources>
