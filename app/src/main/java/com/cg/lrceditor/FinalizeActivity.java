@@ -24,6 +24,7 @@ import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -143,48 +144,81 @@ public class FinalizeActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
 
-        final String path;
-        if (saveUri != null) {
-            path = FileUtil.getFullPathFromTreeUri(saveUri, this);
-        } else {
-            path = saveLocation;
-        }
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_layout, null);
+        final EditText editText = dialogView.findViewById(R.id.dialog_edittext);
+        TextView textView = dialogView.findViewById(R.id.dialog_prompt);
+        editText.setHint(getString(R.string.file_name_here_prompt));
+        editText.setText(songName.getText().toString() + ".lrc");
+        textView.setText(getString(R.string.save_file_name_prompt));
 
-        if (path != null) {
-            final File f = new File(path + "/" + songName.getText().toString() + ".lrc");
-            if (f.exists()) {
-                new AlertDialog.Builder(this)
-                        .setTitle("Warning")
-                        .setMessage("File '" + songName.getText().toString() + ".lrc' already exists in " + saveLocation + ". " +
-                                "Are you sure you want to overwrite it?")
-                        .setCancelable(false)
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (!deletefile()) {
-                                    Toast.makeText(getApplicationContext(), "Failed to overwrite file; Suffix will be appended to the file name", Toast.LENGTH_LONG).show();
-                                }
+        final Context ctx = this;
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
 
-                                writeLyricsExternal();
+                        final String path;
+                        if (saveUri != null) {
+                            path = FileUtil.getFullPathFromTreeUri(saveUri, ctx);
+                        } else {
+                            path = saveLocation;
+                        }
+
+                        String fileName = editText.getText().toString();
+                        if (fileName.endsWith(".lrc"))
+                            fileName = fileName.substring(0, fileName.length() - 4);
+
+                        if (path != null) {
+                            final File f = new File(path + "/" + fileName + ".lrc");
+                            if (f.exists()) {
+                                final String finalFileName = fileName;
+                                new AlertDialog.Builder(ctx)
+                                        .setTitle("Warning")
+                                        .setMessage("File '" + fileName + ".lrc' already exists in " + saveLocation + ". " +
+                                                "Are you sure you want to overwrite it?")
+                                        .setCancelable(false)
+                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                if (!deletefile(finalFileName)) {
+                                                    Toast.makeText(ctx, "Failed to overwrite file; Suffix will be appended to the file name", Toast.LENGTH_LONG).show();
+                                                }
+
+                                                writeLyricsExternal(finalFileName);
+                                            }
+                                        })
+                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                resultTextView.setVisibility(View.GONE);
+                                            }
+                                        })
+                                        .show();
+                            } else {
+                                writeLyricsExternal(fileName);
                             }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                resultTextView.setVisibility(View.GONE);
-                            }
-                        })
-                        .show();
-            } else {
-                writeLyricsExternal();
-            }
-        } else {
-            writeLyricsExternal();
-        }
+                        } else {
+                            writeLyricsExternal(fileName);
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        resultTextView.setVisibility(View.GONE);
+                    }
+                })
+                .setCancelable(false)
+                .create();
+        dialog.show();
+
     }
 
 
-    private void writeLyricsExternal() {
+    private void writeLyricsExternal(String fileName) {
         DocumentFile pickedDir;
         try {
             pickedDir = DocumentFile.fromTreeUri(this, saveUri);
@@ -193,7 +227,7 @@ public class FinalizeActivity extends AppCompatActivity {
             pickedDir = DocumentFile.fromFile(new File(saveLocation));
         }
 
-        DocumentFile file = pickedDir.createFile("application/*", songName.getText().toString() + ".lrc");
+        DocumentFile file = pickedDir.createFile("application/*", fileName + ".lrc");
         try {
             OutputStream out = getContentResolver().openOutputStream(file.getUri());
             InputStream in = new ByteArrayInputStream(lyricsToString().getBytes("UTF-8"));
@@ -208,7 +242,7 @@ public class FinalizeActivity extends AppCompatActivity {
             out.flush();
             out.close();
 
-            saveSuccessful();
+            saveSuccessful(fileName);
 
         } catch (IOException | NullPointerException e) {
             e.printStackTrace();
@@ -221,17 +255,17 @@ public class FinalizeActivity extends AppCompatActivity {
 
     }
 
-    private void saveSuccessful() {
+    private void saveSuccessful(String fileName) {
         resultTextView.setTextColor(Color.rgb(45, 168, 26));
         resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
-                saveLocation + "/" + songName.getText().toString() + ".lrc"));
+                saveLocation + "/" + fileName + ".lrc"));
 
         if (mInterstitialAd.isLoaded()) {
             mInterstitialAd.show();
         }
     }
 
-    private boolean deletefile() {
+    private boolean deletefile(String fileName) {
         DocumentFile pickedDir;
         try {
             pickedDir = DocumentFile.fromTreeUri(this, saveUri);
@@ -240,7 +274,7 @@ public class FinalizeActivity extends AppCompatActivity {
             pickedDir = DocumentFile.fromFile(new File(saveLocation));
         }
 
-        DocumentFile file = pickedDir.findFile(songName.getText().toString() + ".lrc");
+        DocumentFile file = pickedDir.findFile(fileName + ".lrc");
         return file != null && file.delete();
     }
 

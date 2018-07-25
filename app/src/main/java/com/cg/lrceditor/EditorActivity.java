@@ -348,8 +348,9 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         } catch (IOException | IllegalArgumentException e) {
             Toast.makeText(this, "Whoops " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
-            finish();
+            return;
         }
+
         playerPrepared = false;
         uri = songUri;
 

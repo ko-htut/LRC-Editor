@@ -1,6 +1,7 @@
 package com.cg.lrceditor;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -31,7 +33,13 @@ public class SettingsActivity extends AppCompatActivity {
     public void changeSaveLocation(View view) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        startActivityForResult(intent, LOCATION_REQUEST);
+        try {
+            startActivityForResult(intent, LOCATION_REQUEST);
+        } catch(ActivityNotFoundException e) {
+            Toast.makeText(this, "Whoops! Couldn't open the directory picker!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Are you running Android 5.0+? Maybe enable DocumentsUI from your phone settings", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
     }
 
     @Override
