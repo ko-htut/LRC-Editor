@@ -16,7 +16,7 @@
     <string name="pause_symbol">&#9612;&#9612;</string>
     <string name="forward_5_text"><![CDATA[>> 5]]></string>
     <string name="tapToAddSong_prompt">Tap here to select a song</string>
-    <string name="version_string">Version 1.04</string>
+    <string name="version_string">Version 1.05</string>
     <string name="author_string">Made with ♥\n(and a lot of code :p)</string>
     <string name="rate_and_feedback_string">This app is made and maintained by just me\nPlease rate the app and provide constructive feedback\n\n\nThank You!\n♥</string>
     <string name="toolbar_done_icon">Done</string>
@@ -63,4 +63,6 @@
     <string name="title_error_message">An unexpected error occurred trying to set the title</string>
     <string name="add_a_lyric_text">Add a lyric</string>
     <string name="rate_and_review_text">Rate and Review the App</string>
+    <string name="save_file_name_prompt">File name to save:</string>
+    <string name="file_name_here_prompt">File name here</string>
 </resources>
