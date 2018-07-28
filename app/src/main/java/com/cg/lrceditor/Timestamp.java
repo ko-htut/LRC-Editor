@@ -2,6 +2,8 @@ package com.cg.lrceditor;
 
 import java.util.concurrent.TimeUnit;
 
+// UNUSED CLASS
+
 public class Timestamp {
 
     private int minutes, seconds, milliseconds;
