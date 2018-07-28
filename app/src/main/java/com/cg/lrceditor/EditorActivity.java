@@ -492,7 +492,11 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                 Uri uri = resultData.getData();
 
                 if (uri != null) {
-                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    try {
+                        getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } catch(SecurityException e) {
+                        e.printStackTrace();
+                    }
 
                     play_pause.setText(R.string.play_symbol);
                     isPlaying = false;

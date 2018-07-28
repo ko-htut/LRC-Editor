@@ -222,7 +222,11 @@ public class FinalizeActivity extends AppCompatActivity {
         DocumentFile pickedDir;
         try {
             pickedDir = DocumentFile.fromTreeUri(this, saveUri);
-            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            try {
+                getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
         } catch (IllegalArgumentException | NullPointerException e) {
             pickedDir = DocumentFile.fromFile(new File(saveLocation));
         }
@@ -269,7 +273,11 @@ public class FinalizeActivity extends AppCompatActivity {
         DocumentFile pickedDir;
         try {
             pickedDir = DocumentFile.fromTreeUri(this, saveUri);
-            getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            try {
+                getContentResolver().takePersistableUriPermission(saveUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
         } catch (IllegalArgumentException | NullPointerException e) {
             pickedDir = DocumentFile.fromFile(new File(saveLocation));
         }
