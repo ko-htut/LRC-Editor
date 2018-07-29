@@ -93,6 +93,10 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
             if (longPressed != 0 && milli != 0)
                 timestampUpdater.postDelayed(this, 50);
+            else {
+                longPressedPos = -1;
+                longPressed = 0;
+            }
         }
     };
 
@@ -267,20 +271,28 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
     @Override
     public void onLongPressIncrTime(int position) {
-        longPressedPos = position;
         longPressed = 1;
 
-        timestampUpdater.post(updateTimestamp);
+        if(longPressedPos == -1) {
+            longPressedPos = position;
+            timestampUpdater.post(updateTimestamp);
+        } else {
+            longPressedPos = position;
+        }
 
         changedData = true;
     }
 
     @Override
     public void onLongPressDecrTime(int position) {
-        longPressedPos = position;
         longPressed = -1;
 
-        timestampUpdater.post(updateTimestamp);
+        if(longPressedPos == -1) {
+            longPressedPos = position;
+            timestampUpdater.post(updateTimestamp);
+        } else {
+            longPressedPos = position;
+        }
 
         changedData = true;
     }
@@ -540,6 +552,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
                         List<Integer> selectedItemPositions =
                                 mAdapter.getSelectedItems();
+                        longPressedPos = -1;
+                        longPressed = 0;
                         if (selectedOption == 0) { /* Delete timestamps only */
                             for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
                                 mAdapter.lyricData.get(selectedItemPositions.get(i)).setTimestamp(null);
@@ -626,7 +640,9 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                         changedData = true;
 
                         if (lyric_change == 1) {         /* Add before */
-
+                            if(longPressed != -1 && position <= longPressedPos) {
+                                longPressedPos += 1;
+                            }
                             mAdapter.lyricData.add(position,
                                     new ItemData(editText.getText().toString(), null));
                             mAdapter.notifyDataSetChanged();
@@ -838,6 +854,10 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_done:
+                if(longPressedPos != -1) {
+                    longPressed = 0;
+                    longPressedPos = -1;
+                }
                 Intent intent = new Intent(this, FinalizeActivity.class);
                 intent.putExtra("lyricData", (ArrayList<ItemData>) mAdapter.lyricData);
                 intent.putExtra("URI", uri);
@@ -879,6 +899,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
     private void reset() {
         stopUpdating = true;
+        longPressed = 0;
+        longPressedPos = -1;
         player.stop();
         play_pause.setText(R.string.play_symbol);
         isPlaying = false;
