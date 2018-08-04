@@ -141,6 +141,9 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
                     empty_textview.setVisibility(View.VISIBLE);
                     r.setVisibility(View.GONE);
                 }
+            } else {
+                empty_textview.setVisibility(View.VISIBLE);
+                r.setVisibility(View.GONE);
             }
         }
     }
@@ -359,12 +362,12 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
 
                         for (int i = selectedItemPositions.size() - 1; i >= 0; i--) {
                             DocumentFile file = pickedDir.findFile(mAdapter.mFileList.get(selectedItemPositions.get(i)).getName());
-                            if(file == null || !file.delete())
+                            if (file == null || !file.delete())
                                 deleteFailure = true;
                         }
                         scan_lyrics();
 
-                        if(deleteFailure) {
+                        if (deleteFailure) {
                             Toast.makeText(getApplicationContext(), "Failed to delete some/all the selected LRC files!", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(getApplicationContext(), "Deleted selected LRC files successfully", Toast.LENGTH_LONG).show();
@@ -400,7 +403,7 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
                         setNewFileName(editText.getText().toString(), fileName);
                         actionMode.finish();
                         actionMode = null;
-                     }
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .create();
@@ -411,15 +414,14 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
     private void setNewFileName(String newName, String fileName) {
         DocumentFile pickedDir = getPersistableDocumentFile();
 
-        if(new File(saveLocation, newName).exists())
+        if (new File(saveLocation, newName).exists())
             Toast.makeText(this, "File name already exists. Prefix might be added", Toast.LENGTH_LONG).show();
 
         DocumentFile file = pickedDir.findFile(fileName);
-        if(file != null && file.renameTo(newName)) {
+        if (file != null && file.renameTo(newName)) {
             Toast.makeText(this, "Renamed file successfully", Toast.LENGTH_LONG).show();
             scan_lyrics();
-        }
-        else
+        } else
             Toast.makeText(this, "Rename failed!", Toast.LENGTH_LONG).show();
 
     }
@@ -444,7 +446,7 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         mAdapter.selectAll();
         int count = mAdapter.getSelectionCount();
 
-        if(count >= 2)
+        if (count >= 2)
             actionMode.getMenu().findItem(R.id.action_rename_homepage).setVisible(false);
 
         actionMode.setTitle(String.valueOf(count));
