@@ -6,8 +6,8 @@ android {
         applicationId "com.cg.lrceditor"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 13
-        versionName "1.05"
+        versionCode 14
+        versionName "1.06"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -19,10 +19,8 @@ android {
             shrinkResources true
         }
         debug {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
-            shrinkResources true
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     productFlavors {

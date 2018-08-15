@@ -14,16 +14,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -38,7 +35,6 @@ import com.google.android.gms.ads.MobileAds;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -81,6 +77,7 @@ public class FinalizeActivity extends AppCompatActivity {
         composerName = findViewById(R.id.composer_edittext);
 
         resultTextView = findViewById(R.id.result_textview);
+        resultTextView.setMovementMethod(new ScrollingMovementMethod());
 
         if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
             grantPermission();
@@ -141,8 +138,8 @@ public class FinalizeActivity extends AppCompatActivity {
         Button copy_error = findViewById(R.id.copy_error_button);
         copy_error.setVisibility(View.GONE);
 
-        if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
-            grantPermission();
+        if (Build.VERSION.SDK_INT >= 23 && !grantPermission()) /* 23 = Marshmellow */
+            return;
 
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_layout, null);
@@ -308,25 +305,17 @@ public class FinalizeActivity extends AppCompatActivity {
         return sb.toString();
     }
 
-    private void grantPermission() {
+    private boolean grantPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             displayDialog();
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_REQUEST);
+            return false;
         }
+        return true;
     }
 
     private void displayDialog() {
-
-        final Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                throw new RuntimeException();
-            }
-        };
-
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setMessage("This app needs the write permission for saving the lyric files");
         dialog.setTitle("Need permissions");
@@ -334,15 +323,11 @@ public class FinalizeActivity extends AppCompatActivity {
         dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                handler.sendMessage(handler.obtainMessage());
+                ActivityCompat.requestPermissions(FinalizeActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_REQUEST);
             }
         });
         dialog.show();
-
-        try {
-            Looper.loop(); /* Wait until the user acts upon the dialog */
-        } catch (RuntimeException ignored) {
-        }
     }
 
     @TargetApi(Build.VERSION_CODES.M)

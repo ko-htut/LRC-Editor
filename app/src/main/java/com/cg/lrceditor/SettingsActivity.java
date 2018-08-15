@@ -26,7 +26,7 @@ public class SettingsActivity extends AppCompatActivity {
         saveLocation = findViewById(R.id.save_location);
         settings = getSharedPreferences("LRC Editor Preferences", MODE_PRIVATE);
 
-        String location = settings.getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics/");
+        String location = settings.getString("saveLocation", Environment.getExternalStorageDirectory().getPath() + "/Lyrics");
         saveLocation.setText(location);
     }
 
@@ -61,6 +61,12 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                     editor.apply();
                     saveLocation.setText(realPath);
+
+                    try {
+                        getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    } catch (SecurityException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

@@ -131,6 +131,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="5"
+            android:scrollbars="vertical"
             android:scrollHorizontally="true"
             android:text="@string/processing_string"
             android:visibility="gone" />

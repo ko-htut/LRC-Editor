@@ -9,9 +9,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -24,7 +21,6 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -123,7 +119,15 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
             empty_textview.setVisibility(View.VISIBLE);
             r.setVisibility(View.GONE);
         } else {
-            int count = f.listFiles().length;
+            int count;
+            try {
+                count = f.listFiles().length;
+            } catch(NullPointerException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Failed to scan lyrics! Try changing the save location", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Please send a bug report with as much detail as possible", Toast.LENGTH_LONG).show();
+                return;
+            }
             if (count > 0) {
                 boolean lyricsAvailable = false;
                 for (File file : f.listFiles())
@@ -189,32 +193,22 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= 23) /* 23 = Marshmellow */
-            grantPermission();
-        else
+        if (Build.VERSION.SDK_INT < 23 || grantPermission()) /* 23 = Marshmellow */
             storagePermissionAlreadyGranted = true;
     }
 
-    private void grantPermission() {
+    private boolean grantPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             displayDialog();
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_REQUEST);
-        } else
-            storagePermissionAlreadyGranted = true;
+            return false;
+        }
+
+        return true;
     }
 
     private void displayDialog() {
-
-        final Handler handler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                throw new RuntimeException();
-            }
-        };
-
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setMessage("This app needs the read/write permission for viewing and saving the lyric files");
         dialog.setTitle("Need permissions");
@@ -222,15 +216,12 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
         dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                handler.sendMessage(handler.obtainMessage());
+                ActivityCompat.requestPermissions(HomePage.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_REQUEST);
             }
         });
         dialog.show();
 
-        try {
-            Looper.loop(); /* Wait until the user acts upon the dialog */
-        } catch (RuntimeException ignored) {
-        }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -283,6 +274,19 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
             case R.id.action_settings:
                 intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
+                return true;
+            case R.id.action_feedback:
+                String deviceInfo = "";
+                deviceInfo += "\n OS Version: " + System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
+                deviceInfo += "\n OS API Level: " + android.os.Build.VERSION.SDK_INT;
+                deviceInfo += "\n Device: " + android.os.Build.DEVICE;
+                deviceInfo += "\n Model and Product: " + android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")";
+
+                intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto",getString(R.string.dev_email), null));
+                intent.putExtra(Intent.EXTRA_SUBJECT, "LRC Editor Feedback");
+                intent.putExtra(Intent.EXTRA_TEXT, "Enter your feedback/bug report here\n\n" + deviceInfo);
+                startActivity(Intent.createChooser(intent, "Send Feedback:"));
+
                 return true;
             case R.id.action_about:
                 intent = new Intent(this, AboutActivity.class);

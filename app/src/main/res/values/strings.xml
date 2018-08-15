@@ -65,4 +65,6 @@
     <string name="rate_and_review_text">Rate and Review the App</string>
     <string name="save_file_name_prompt">File name to save:</string>
     <string name="file_name_here_prompt">File name here</string>
+    <string name="toolbar_feedback_icon">Send feedback</string>
+    <string name="dev_email">cg.devworks@gmail.com</string>
 </resources>
