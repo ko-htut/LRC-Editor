@@ -3,6 +3,7 @@ package com.cg.lrceditor;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
     public final List<ItemData> lyricData;
     private LayoutInflater mInflator;
     private SparseBooleanArray selectedItems;
+    private SparseBooleanArray flashItems;
 
     private ItemClickListener mClickListener;
 
@@ -26,6 +28,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         mInflator = LayoutInflater.from(context);
         this.lyricData = lyricData;
         selectedItems = new SparseBooleanArray();
+        flashItems = new SparseBooleanArray();
     }
 
     @Override
@@ -43,6 +46,9 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         }
 
         holder.itemView.setActivated(selectedItems.get(position, false));
+        holder.itemView.setHovered(flashItems.get(position, false));
+        if(holder.itemView.isHovered())
+            holder.itemView.setActivated(false);
 
         applyClickEvents(holder, position);
     }
@@ -75,6 +81,20 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
     @Override
     public int getItemCount() {
         return lyricData.size();
+    }
+
+    public void startFlash(int pos) {
+        flashItems.put(pos, true);
+        notifyItemChanged(pos);
+    }
+
+    public SparseBooleanArray getFlashingItems() {
+        return this.flashItems;
+    }
+
+    public void stopFlash(int pos) {
+        flashItems.delete(pos);
+        notifyItemChanged(pos);
     }
 
     public void toggleSelection(int pos) {
@@ -144,7 +164,7 @@ public class LyricListAdapter extends RecyclerView.Adapter<LyricListAdapter.Lyri
         private final Button itemadd;
         final LyricListAdapter mAdapter;
 
-        LyricViewHolder(View itemView, LyricListAdapter adapter) {
+        LyricViewHolder(final View itemView, LyricListAdapter adapter) {
             super(itemView);
 
             linearLayout = itemView.findViewById(R.id.item_parent_linearlayout);

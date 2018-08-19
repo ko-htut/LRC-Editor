@@ -15,7 +15,9 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,6 +43,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     private static final int FILE_REQUEST = 1;
 
     private RecyclerView mRecyclerView;
+    private LinearLayoutManager linearLayoutManager;
     private LyricListAdapter mAdapter;
 
     private boolean isPlaying = false;
@@ -68,6 +71,64 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     private TextView startText, endText;
     private TextView titleText;
     private Button play_pause;
+
+    private Handler flasher = new Handler();
+    private boolean flashCheck = false;
+    private Runnable flash = new Runnable() {
+        @Override
+        public void run() {
+            if (!flashCheck)
+                return;
+
+            int time = player.getCurrentPosition();
+            int first = linearLayoutManager.findFirstVisibleItemPosition();
+            int last = linearLayoutManager.findLastVisibleItemPosition();
+
+            int pos = first;
+            SparseBooleanArray s = mAdapter.getFlashingItems();
+            while (pos <= last) {
+                String timestamp = mAdapter.lyricData.get(pos).getTimestamp();
+                if (timestamp == null) {
+                    pos++;
+                    continue;
+                }
+                int currTime = timeToMilli(timestamp);
+                int diff = time - currTime;
+                if (diff <= 100 && diff >= 0 && s.indexOfKey(pos) < 0) {
+                    ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(true);
+                    mAdapter.startFlash(pos);
+                    flasher.postDelayed(new stopFlash(pos), 450);
+                }
+                pos++;
+            }
+
+            flasher.postDelayed(this, 20);
+        }
+    };
+
+    private class stopFlash implements Runnable {
+        int pos;
+
+        stopFlash(int pos) {
+            this.pos = pos;
+        }
+
+        @Override
+        public void run() {
+            mAdapter.stopFlash(this.pos);
+
+            Handler waiter = new Handler();
+            waiter.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(mAdapter.getFlashingItems().size() == 0) {
+                        ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
+                    }
+                }
+            }, 250);
+
+        }
+    }
 
     private Runnable updateTimestamp = new Runnable() {
         @Override
@@ -135,10 +196,12 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         }
 
         mRecyclerView = findViewById(R.id.recyclerview);
+        ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
         mAdapter = new LyricListAdapter(this, lyricData);
         mAdapter.setClickListener(this);
         mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        linearLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 DividerItemDecoration.VERTICAL);
@@ -158,6 +221,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         seekbar.setOnSeekBarChangeListener(this);
+
+        flasher.post(flash);
     }
 
     private ArrayList<ItemData> populateDataSet(String[] lyrics, String[] timestamps) {
@@ -184,6 +249,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     protected void onStop() {
         super.onStop();
         if (isPlaying) {
+            flashCheck = false;
             playPause(null);
         }
     }
@@ -219,6 +285,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             isPlaying = true;
         }
         songTimeUpdater.post(updateSongTime);
+        flashCheck = true;
+        flasher.post(flash);
     }
 
     @Override
@@ -241,6 +309,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             player.start();
             isPlaying = true;
             songTimeUpdater.post(updateSongTime);
+            flashCheck = true;
+            flasher.post(flash);
         }
     }
 
@@ -266,6 +336,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             player.start();
             isPlaying = true;
             songTimeUpdater.post(updateSongTime);
+            flashCheck = true;
+            flasher.post(flash);
         }
     }
 
@@ -273,7 +345,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     public void onLongPressIncrTime(int position) {
         longPressed = 1;
 
-        if(longPressedPos == -1) {
+        if (longPressedPos == -1) {
             longPressedPos = position;
             timestampUpdater.post(updateTimestamp);
         } else {
@@ -287,7 +359,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     public void onLongPressDecrTime(int position) {
         longPressed = -1;
 
-        if(longPressedPos == -1) {
+        if (longPressedPos == -1) {
             longPressedPos = position;
             timestampUpdater.post(updateTimestamp);
         } else {
@@ -415,9 +487,12 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         if (isPlaying) {
             play_pause.setText(R.string.play_symbol);
             player.pause();
+            flashCheck = false;
         } else {
             play_pause.setText(R.string.pause_symbol);
             player.start();
+            flashCheck = true;
+            flasher.post(flash);
         }
         isPlaying = !isPlaying;
     }
@@ -488,6 +563,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
     public void onCompletion(MediaPlayer mp) {
         play_pause.setText(R.string.play_symbol);
         isPlaying = false;
+        flashCheck = false;
     }
 
     public void selectSong(View view) {
@@ -506,7 +582,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                 if (uri != null) {
                     try {
                         getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    } catch(SecurityException e) {
+                    } catch (SecurityException e) {
                         e.printStackTrace();
                     }
 
@@ -640,7 +716,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                         changedData = true;
 
                         if (lyric_change == 1) {         /* Add before */
-                            if(longPressed != -1 && position <= longPressedPos) {
+                            if (longPressed != -1 && position <= longPressedPos) {
                                 longPressedPos += 1;
                             }
                             mAdapter.lyricData.add(position,
@@ -854,7 +930,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_done:
-                if(longPressedPos != -1) {
+                if (longPressedPos != -1) {
                     longPressed = 0;
                     longPressedPos = -1;
                 }
@@ -899,6 +975,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
 
     private void reset() {
         stopUpdating = true;
+        flashCheck = false;
         longPressed = 0;
         longPressedPos = -1;
         player.stop();

@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
@@ -60,6 +61,7 @@ public class FinalizeActivity extends AppCompatActivity {
     private Uri saveUri;
 
     private InterstitialAd mInterstitialAd;
+    private boolean overwriteFailed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +143,8 @@ public class FinalizeActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= 23 && !grantPermission()) /* 23 = Marshmellow */
             return;
 
+         overwriteFailed = false;
+
         LayoutInflater inflater = this.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_layout, null);
         final EditText editText = dialogView.findViewById(R.id.dialog_edittext);
@@ -181,7 +185,8 @@ public class FinalizeActivity extends AppCompatActivity {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 if (!deletefile(finalFileName)) {
-                                                    Toast.makeText(ctx, "Failed to overwrite file; Suffix will be appended to the file name", Toast.LENGTH_LONG).show();
+                                                    overwriteFailed = true;
+                                                    Toast.makeText(getApplicationContext(), "Failed to overwrite file; Suffix will be appended to the file name", Toast.LENGTH_LONG).show();
                                                 }
 
                                                 writeLyricsExternal(finalFileName);
@@ -258,8 +263,12 @@ public class FinalizeActivity extends AppCompatActivity {
 
     private void saveSuccessful(String fileName) {
         resultTextView.setTextColor(Color.rgb(45, 168, 26));
-        resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
-                saveLocation + "/" + fileName + ".lrc"));
+        if(overwriteFailed)
+            resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
+                    saveLocation + "/" + fileName + "<suffix> .lrc"));
+        else
+            resultTextView.setText(String.format(Locale.getDefault(), "Successfully wrote the lyrics file at %s",
+                    saveLocation + "/" + fileName + ".lrc"));
 
         if (mInterstitialAd.isLoaded()) {
             mInterstitialAd.show();
@@ -291,7 +300,7 @@ public class FinalizeActivity extends AppCompatActivity {
                 .append("[au: ").append(composerName.getText().toString().trim()).append("]\n")
                 .append("\n")
                 .append("[re: ").append(getString(R.string.app_name)).append(" - Android app").append("]\n")
-                .append("[ve: ").append(getString(R.string.version_string)).append("]\n")
+                .append("[ve: ").append("Version ").append(BuildConfig.VERSION_NAME).append("]\n")
                 .append("\n");
 
         for (int i = 0, len = lyricData.size(); i < len; i++) {
@@ -369,6 +378,15 @@ public class FinalizeActivity extends AppCompatActivity {
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                if(overwriteFailed) {
+                    Toast.makeText(getApplicationContext(), "Failed to overwrite file; Suffix will be appended to the file name", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     public void copy_lrc(View view) {

@@ -16,7 +16,6 @@
     <string name="pause_symbol">&#9612;&#9612;</string>
     <string name="forward_5_text"><![CDATA[>> 5]]></string>
     <string name="tapToAddSong_prompt">Tap here to select a song</string>
-    <string name="version_string">Version 1.05</string>
     <string name="author_string">Made with ♥\n(and a lot of code :p)</string>
     <string name="rate_and_feedback_string">This app is made and maintained by just me\nPlease rate the app and provide constructive feedback\n\n\nThank You!\n♥</string>
     <string name="toolbar_done_icon">Done</string>
@@ -65,6 +64,6 @@
     <string name="rate_and_review_text">Rate and Review the App</string>
     <string name="save_file_name_prompt">File name to save:</string>
     <string name="file_name_here_prompt">File name here</string>
-    <string name="toolbar_feedback_icon">Send feedback</string>
+    <string name="send_feedback">Send feedback</string>
     <string name="dev_email">cg.devworks@gmail.com</string>
 </resources>

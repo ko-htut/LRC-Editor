@@ -275,19 +275,6 @@ public class HomePage extends AppCompatActivity implements HomePageListAdapter.L
                 intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
-            case R.id.action_feedback:
-                String deviceInfo = "";
-                deviceInfo += "\n OS Version: " + System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
-                deviceInfo += "\n OS API Level: " + android.os.Build.VERSION.SDK_INT;
-                deviceInfo += "\n Device: " + android.os.Build.DEVICE;
-                deviceInfo += "\n Model and Product: " + android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")";
-
-                intent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto",getString(R.string.dev_email), null));
-                intent.putExtra(Intent.EXTRA_SUBJECT, "LRC Editor Feedback");
-                intent.putExtra(Intent.EXTRA_TEXT, "Enter your feedback/bug report here\n\n" + deviceInfo);
-                startActivity(Intent.createChooser(intent, "Send Feedback:"));
-
-                return true;
             case R.id.action_about:
                 intent = new Intent(this, AboutActivity.class);
                 startActivity(intent);
