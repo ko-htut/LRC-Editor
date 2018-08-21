@@ -17,6 +17,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -85,9 +86,19 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             int last = linearLayoutManager.findLastVisibleItemPosition();
 
             int pos = first;
+            if (first == -1 || last == -1) {
+                flashCheck = false;
+                return;
+            }
             SparseBooleanArray s = mAdapter.getFlashingItems();
             while (pos <= last) {
-                String timestamp = mAdapter.lyricData.get(pos).getTimestamp();
+                String timestamp;
+                try {
+                    timestamp = mAdapter.lyricData.get(pos).getTimestamp();
+                } catch(ArrayIndexOutOfBoundsException ignored) {
+                    pos++;
+                    continue;
+                }
                 if (timestamp == null) {
                     pos++;
                     continue;
@@ -102,7 +113,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                 pos++;
             }
 
-            flasher.postDelayed(this, 20);
+            if(isPlaying)
+                flasher.postDelayed(this, 20);
         }
     };
 
@@ -121,7 +133,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
             waiter.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(mAdapter.getFlashingItems().size() == 0) {
+                    if (mAdapter.getFlashingItems().size() == 0) {
                         ((SimpleItemAnimator) mRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
                     }
                 }
@@ -268,6 +280,9 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                 String.format(Locale.getDefault(), "%02d:%02d.%02d", getMinutes(pos), getSeconds(pos), getMilli(pos)));
         mAdapter.notifyItemChanged(position);
         mRecyclerView.smoothScrollToPosition(position + 1);
+
+        flashCheck = true;
+        flasher.post(flash);
     }
 
     @Override
@@ -645,6 +660,7 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                             }
                         }
 
+                        changedData = true;
                         mAdapter.notifyDataSetChanged();
 
                         actionMode.finish();
@@ -908,6 +924,8 @@ public class EditorActivity extends AppCompatActivity implements LyricListAdapte
                         }
 
                         actionMode.finish();
+                        flashCheck = true;
+                        flasher.post(flash);
                     }
                 })
                 .setNegativeButton("Cancel", null)
